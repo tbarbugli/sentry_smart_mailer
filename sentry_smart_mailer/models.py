@@ -4,6 +4,7 @@ from sentry_smart_mailer.switches import SwitchManager
 from sentry.plugins import register
 from sentry.plugins import unregister
 from sentry.plugins.sentry_mail.models import MailProcessor
+from sentry.utils.cache import Lock
 
 class SmartMailer(MailProcessor):
     title = 'Smart mailer'
@@ -13,15 +14,15 @@ class SmartMailer(MailProcessor):
     author = "Tommaso Barbugli"
     author_url = "https://github.com/tbarbugli/sentry_smart_mailer"
 
-    def should_notify(self, group, event):
-        notify = SwitchManager.send_email(group=group, logger_name=group.logger)
-        # base_notification = False and super(SmartMailer, self).should_notify(group, event)
-        import logging
-        # logging.warning('%r %r' % (notify, base_notification))
-        return notify
+    def should_notify(self, group, is_new):
+        with Lock(':'.join(['lock', str(group.id)])) as lock:
+            if lock.was_locked:
+                return is_new
+            notify = SwitchManager.send_email(group=group, logger_name=group.logger)
+            return is_new or notify
 
     def post_process(self, group, event, is_new, is_sample, **kwargs):
-        if not self.should_notify(group, event):
+        if not self.should_notify(group, is_new):
             return
         try:
             email_sent_at = list(group.last_email_sent)

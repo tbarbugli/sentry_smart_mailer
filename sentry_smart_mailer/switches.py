@@ -81,5 +81,4 @@ class ThrottleSwitch(Switch):
             defcon = plugins.get('sentry_defcon')
         except KeyError:
             return True
-        if defcon.condition == 1:
-            return False
+        return not defcon.is_cocked()
