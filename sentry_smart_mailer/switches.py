@@ -56,10 +56,9 @@ class WakeUpSwitch(Switch):
     @classmethod
     def should_send(cls, *args, **kwargs):
         group = kwargs['group']
-        try:
-            last_email_sent = list(group.last_email_sent) or [(None, 1)]
-        except:
-            last_email_sent = [(None, 1)]
+        last_email_sent = group.last_email_sent
+        if not last_email_sent or not isinstance(last_email_sent, list):
+            return True
         last_email_sent_at, last_email_sent_count = last_email_sent[-1]
         now = datetime.now()
         if not last_email_sent_at:

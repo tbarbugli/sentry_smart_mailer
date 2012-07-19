@@ -14,3 +14,7 @@ Also it will resend an email when the same error 'reappears' after 1 months.
 Also, it integrates with the [sentry_defcon](https://github.com/tbarbugli/sentry_defcon) plugin so that when sentry is receiving lots
 of errors, it will stop sending email until the error/rate decrease to a safer level
 (aka it stops spamming your inbox).
+
+At this present this plugin requires my forked version of Sentry, the install of the right
+sentry package should be handled by the setup.py correctly, in case you have issues you install it
+directly from the [github repo](https://github.com/tbarbugli/sentry).

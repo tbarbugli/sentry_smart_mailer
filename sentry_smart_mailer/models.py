@@ -14,15 +14,15 @@ class SmartMailer(MailProcessor):
     author = "Tommaso Barbugli"
     author_url = "https://github.com/tbarbugli/sentry_smart_mailer"
 
-    def should_notify(self, group, is_new):
-        with Lock(':'.join(['lock', str(group.id)])) as lock:
+    def should_notify(self, group):
+        lock_key = 'lock_mail:%s' % group.id
+        with Lock(lock_key) as lock:
             if lock.was_locked:
-                return is_new
-            notify = SwitchManager.send_email(group=group, logger_name=group.logger)
-            return is_new or notify
+                return False
+            return SwitchManager.send_email(group=group, logger_name=group.logger)
 
     def post_process(self, group, event, is_new, is_sample, **kwargs):
-        if not self.should_notify(group, is_new):
+        if not self.should_notify(group):
             return
         try:
             email_sent_at = list(group.last_email_sent)
