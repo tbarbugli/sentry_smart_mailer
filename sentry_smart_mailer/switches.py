@@ -51,7 +51,7 @@ class WakeUpSwitch(Switch):
         uses log 10 to determine if we have seen enough messages to issue
         another notification (1,10,100,1000,10000 ...)
         """
-        return int(math.log(current,10) - math.log(prev,10)) > 1
+        return int(math.log(current,10) - math.log(prev,10)) >= 1
 
     @classmethod
     def should_send(cls, *args, **kwargs):

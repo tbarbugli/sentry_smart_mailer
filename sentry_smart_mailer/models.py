@@ -1,10 +1,12 @@
 from datetime import datetime
 import sentry_smart_mailer
+from sentry.models import Group
 from sentry_smart_mailer.switches import SwitchManager
 from sentry.plugins import register
 from sentry.plugins import unregister
 from sentry.plugins.sentry_mail.models import MailProcessor
 from sentry.utils.cache import Lock, UnableToGetLock
+
 
 class SmartMailer(MailProcessor):
     title = 'Smart mailer'
@@ -20,9 +22,9 @@ class SmartMailer(MailProcessor):
     def post_process(self, group, event, is_new, is_sample, **kwargs):
         lock_key = 'lock_mail:%s' % group.id
         try:
-            #just make one attempt
-            with Lock(lock_key, timeout=0.1):
-                self.post_process(self, group, event, is_new, is_sample, **kwargs)
+            with Lock(lock_key, timeout=0.5):
+                group = Group.objects.get(pk=group.pk)
+                self._post_process(group, event, is_new, is_sample, **kwargs)
         except UnableToGetLock:
             pass
 
