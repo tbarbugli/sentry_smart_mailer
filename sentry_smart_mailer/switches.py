@@ -55,7 +55,7 @@ class WakeUpSwitch(Switch):
 
     @classmethod
     def should_send(cls, group, *args, **kwargs):
-        ret = cls._should_send(*args, **kwargs)
+        ret = cls._should_send(group, *args, **kwargs)
         if ret and group.times_seen > 1:
             #hack to change the mail subject when error is recurrent
             group.project.name = "RECURRENT %s" % group.project.name
