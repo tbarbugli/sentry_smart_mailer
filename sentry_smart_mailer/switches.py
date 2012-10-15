@@ -1,7 +1,7 @@
 from datetime import timedelta, datetime
 import math
 from sentry.plugins import plugins
-from models import get_last_email_sent_at
+from sentry_smart_mailer.models import get_last_email_sent_at
 
 
 _switches = {}
