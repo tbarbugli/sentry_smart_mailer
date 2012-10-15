@@ -12,16 +12,20 @@ from sentry_smart_mailer.switches import SwitchManager
 LAST_MAIL_SENT_AT_KEY = '_LAST_MAIL_SENT_AT'
 DEFAULT_VALUE = pickle.dumps([])
 
-def get_last_email_sent_at(group):
+def get_last_email_sent_at_obj(group):
     meta, c = GroupMeta.objects.get_or_create(
         group=group,
         key=LAST_MAIL_SENT_AT_KEY,
         defaults=dict(value=DEFAULT_VALUE)
     )
+    return meta
+
+def get_last_email_sent_at(group):
+    meta = get_last_email_sent_at_obj(group)
     return pickle.loads(meta.value)
 
 def set_last_email_sent_at(group, value):
-    meta = get_last_email_sent_at(group)
+    meta = get_last_email_sent_at_obj(group)
     meta.value = pickle.dumps(value)
     meta.save()
 
