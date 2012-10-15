@@ -1,12 +1,28 @@
 from datetime import datetime
+import pickle
 import sentry_smart_mailer
-from sentry.models import Group
-from sentry_smart_mailer.switches import SwitchManager
+from sentry.models import GroupMeta
 from sentry.plugins import register
 from sentry.plugins import unregister
 from sentry.plugins.sentry_mail.models import MailProcessor
 from sentry.utils.cache import Lock, UnableToGetLock
+from sentry_smart_mailer.switches import SwitchManager
 
+
+LAST_MAIL_SENT_AT_KEY = '_LAST_MAIL_SENT_AT'
+DEFAULT_VALUE = pickle.dumps([])
+
+def get_last_email_sent_at(group):
+    meta = GroupMeta.get_or_create(
+        key=LAST_MAIL_SENT_AT_KEY,
+        defaults=dict(value=DEFAULT_VALUE)
+    )
+    return pickle.loads(meta.value)
+
+def set_last_email_sent_at(group, value):
+    meta = get_last_email_sent_at(group)
+    meta.value = pickle.dumps(value)
+    meta.save()
 
 class SmartMailer(MailProcessor):
     title = 'Smart mailer'
@@ -23,7 +39,6 @@ class SmartMailer(MailProcessor):
         lock_key = 'lock_mail:%s' % group.id
         try:
             with Lock(lock_key, timeout=0.5):
-                group = Group.objects.get(pk=group.pk)
                 self._post_process(group, event, is_new, is_sample, **kwargs)
         except UnableToGetLock:
             pass
@@ -32,13 +47,12 @@ class SmartMailer(MailProcessor):
         if not self.should_notify(group):
             return
         try:
-            email_sent_at = list(group.last_email_sent)
+            email_sent_at = list(get_last_email_sent_at(group))
         except:
             email_sent_at = []
         self.notify_users(group, event)
         email_sent_at.append((datetime.now(), group.times_seen or 1))
-        group.last_email_sent = email_sent_at[-5:]
-        group.save()
+        set_last_email_sent_at(group, email_sent_at[-5:])
 
 register(SmartMailer)
 unregister(MailProcessor)
