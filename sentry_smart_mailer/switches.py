@@ -1,7 +1,6 @@
 from datetime import timedelta, datetime
 import math
 from sentry.plugins import plugins
-from sentry_smart_mailer.models import get_last_email_sent_at
 
 
 _switches = {}
@@ -66,6 +65,7 @@ class WakeUpSwitch(Switch):
 
     @classmethod
     def _should_send(cls, *args, **kwargs):
+        from models import get_last_email_sent_at
         group = kwargs['group']
         last_email_sent = get_last_email_sent_at(group)
         if not last_email_sent or not isinstance(last_email_sent, list):
