@@ -13,7 +13,7 @@ LAST_MAIL_SENT_AT_KEY = '_LAST_MAIL_SENT_AT'
 DEFAULT_VALUE = pickle.dumps([])
 
 def get_last_email_sent_at(group):
-    meta = GroupMeta.get_or_create(
+    meta = GroupMeta.objects.get_or_create(
         key=LAST_MAIL_SENT_AT_KEY,
         defaults=dict(value=DEFAULT_VALUE)
     )
